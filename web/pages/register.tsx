@@ -75,7 +75,7 @@ const Register: NextPage = () => {
           w="100%"
           borderRadius={2}
         >
-          Login
+          Register
         </Button>
         <Box mt={2}>
           <NextLink href="/">
