@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "discord-clone",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,12 +13,17 @@
     "@emotion/react": "11",
     "@emotion/styled": "11",
     "@fontsource/open-sans": "^4.5.0",
+    "argon2": "^0.28.2",
     "framer-motion": "4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "5.10.19",
     "next": "11.1.2",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.5",
+    "@types/mongoose": "5.10.5",
     "@types/react": "17.0.20",
     "eslint": "7.32.0",
     "eslint-config-next": "11.1.2",
