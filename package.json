@@ -14,14 +14,17 @@
     "@emotion/styled": "11",
     "@fontsource/open-sans": "^4.5.0",
     "argon2": "^0.28.2",
+    "cookie": "^0.4.1",
     "framer-motion": "4",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "5.10.19",
     "next": "11.1.2",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-hook-form": "^7.15.3"
   },
   "devDependencies": {
+    "@types/cookie": "^0.4.1",
     "@types/jsonwebtoken": "^8.5.5",
     "@types/mongoose": "5.10.5",
     "@types/react": "17.0.20",

@@ -1,20 +1,23 @@
 import { Box, Flex, Link, Text } from "@chakra-ui/layout";
 import type { NextPage } from "next";
 import "@fontsource/open-sans";
-import { FormControl, FormLabel } from "@chakra-ui/form-control";
+import {
+  FormControl,
+  FormHelperText,
+  FormLabel,
+} from "@chakra-ui/form-control";
 import { Input } from "@chakra-ui/input";
 import { Button } from "@chakra-ui/react";
 import NextLink from "next/link";
-import Router from "next/router";
 import { Controller, useForm } from "react-hook-form";
+import Router from "next/router";
 
-interface RegisterData {
+interface LoginData {
   email: string;
   password: string;
-  username: string;
 }
 
-const Register: NextPage = () => {
+const Login: NextPage = () => {
   const {
     control,
     handleSubmit,
@@ -24,11 +27,11 @@ const Register: NextPage = () => {
     shouldUnregister: false,
   });
 
-  const onSubmit = async (data: RegisterData) => {
-    const { email, password, username } = data;
+  const onSubmit = async (data: LoginData) => {
+    const { email, password } = data;
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/signup", {
+      const res = await fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -36,39 +39,43 @@ const Register: NextPage = () => {
         body: JSON.stringify({
           email,
           password,
-          username,
         }),
       });
 
-      if (res.ok) {
-        const json = await res.json();
-
-        console.log(json);
-
-        if (json.status === "failed") {
-          setError("email", {
-            message: json.message,
-          });
-          return;
-        }
-
-        Router.push("/");
+      if (!res.ok) {
+        throw new Error("Login or password is invalid.");
       }
+
+      const json = await res.json();
+
+      console.log(json);
+
+      Router.push("/");
     } catch (err: any) {
       console.log(err);
+      setError("email", {
+        message: err.message,
+      });
+      setError("password", {
+        message: err.message,
+      });
     }
   };
+
   return (
     <Flex justifyContent="center" alignItems="center" height="100vh">
       <Box
         backgroundColor="tuna"
         minWidth={475}
-        height={450}
+        height={400}
         borderRadius={5}
         p={5}
       >
-        <Text color="white" textAlign="center" fontSize={22} fontWeight={600}>
-          Create an account
+        <Text color="white" fontSize={22} fontWeight={600}>
+          Welcome back!
+        </Text>
+        <Text color="cloudy" fontSize={15}>
+          We're so excited to see you again!
         </Text>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Controller
@@ -112,45 +119,30 @@ const Register: NextPage = () => {
             )}
             name="email"
             rules={{
-              required: true,
+              required: {
+                value: true,
+                message: "This field is required",
+              },
             }}
             defaultValue=""
           />
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <FormControl mt={4} id="username">
-                <FormLabel fontSize={12} color="#c2c2c2" fontWeight={700}>
-                  USERNAME
-                </FormLabel>
-                <Input
-                  borderColor="black"
-                  backgroundColor="#292b29"
-                  _hover={{
-                    borderColor: "black",
-                  }}
-                  color="#cccccc"
-                  fontWeight={500}
-                  fontSize={16}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value}
-                />
-              </FormControl>
-            )}
-            name="username"
-            rules={{
-              required: true,
-            }}
-            defaultValue=""
-          />
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <FormControl mt={4} id="password">
+              <FormControl mt={5} id="password">
                 <FormLabel fontSize={12} color="#c2c2c2" fontWeight={700}>
                   <Text color={errors?.password?.message ? "red" : "#c2c2c2"}>
                     PASSWORD
+                    {errors?.password?.message && (
+                      <Text
+                        fontStyle="italic"
+                        as="span"
+                        fontWeight="200"
+                        fontSize={12}
+                      >
+                        {" - " + errors?.password?.message}
+                      </Text>
+                    )}
                   </Text>
                 </FormLabel>
                 <Input
@@ -159,6 +151,10 @@ const Register: NextPage = () => {
                   _hover={{
                     borderColor: "black",
                   }}
+                  _invalid={{
+                    borderColor: "red",
+                  }}
+                  isInvalid={errors?.password?.message}
                   color="#cccccc"
                   fontWeight={500}
                   fontSize={16}
@@ -171,7 +167,10 @@ const Register: NextPage = () => {
             )}
             name="password"
             rules={{
-              required: true,
+              required: {
+                value: true,
+                message: "This field is required",
+              },
             }}
             defaultValue=""
           />
@@ -185,19 +184,21 @@ const Register: NextPage = () => {
             w="100%"
             borderRadius={2}
           >
-            Register
+            Login
           </Button>
         </form>
-        <Box mt={2}>
-          <NextLink href="/">
-            <Link color="rgb(66, 153, 225)" fontWeight={500} fontSize={13}>
-              Already have an account?
+
+        <Text mt={3} color="oslogray" fontSize={13}>
+          Need an account?{" "}
+          <NextLink href="/register">
+            <Link color="rgb(66, 153, 225)" fontWeight={500}>
+              Register
             </Link>
           </NextLink>
-        </Box>
+        </Text>
       </Box>
     </Flex>
   );
 };
 
-export default Register;
+export default Login;

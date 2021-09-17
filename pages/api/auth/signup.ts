@@ -3,6 +3,8 @@ import argon2 from "argon2";
 
 import User from "../../../models/User";
 import dbConnect from "../../../utils/dbConnect";
+import { createToken } from "../../../utils/jwt";
+import { setCookie } from "../../../utils/cookie";
 
 const handler: NextApiHandler = async (req, res) => {
   const { method } = req;
@@ -17,12 +19,19 @@ const handler: NextApiHandler = async (req, res) => {
           username,
           password: hashedPassword,
         });
-        res.status(200).json({ message: "success" });
+
+        const token = createToken({ id: user.id }, "1h");
+
+        setCookie(res, token);
+
+        res.status(200).json({ status: "success" });
       } catch (err: any) {
         console.log(err);
 
         if (err.code === 11000) {
-          return res.status(500).send("Duplicate email");
+          return res
+            .status(200)
+            .json({ status: "failed", message: "Email is already registered" });
         }
 
         res.status(500).send("Internal server error");

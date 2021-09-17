@@ -1,9 +1,12 @@
 import { NextApiHandler } from "next";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
 import User from "../../../models/User";
 import dbConnect from "../../../utils/dbConnect";
+import { createToken } from "../../../utils/jwt";
+import { setCookie } from "../../../utils/cookie";
 
 const handler: NextApiHandler = async (req, res) => {
   const { method } = req;
@@ -25,13 +28,12 @@ const handler: NextApiHandler = async (req, res) => {
           return res.status(403).send("wrong email or password");
         }
 
-        const token = jwt.sign(
-          { id: user.id },
-          process.env.JWT_SECRET as string,
-          { expiresIn: "1h" }
-        );
+        const token = createToken({ id: user.id }, "1h");
 
-        res.status(200).json({ token });
+        setCookie(res, token);
+
+        // res.status(200).json({ token });
+        res.status(200).json({ message: "success" });
       } catch (err: any) {
         console.log(err);
 
