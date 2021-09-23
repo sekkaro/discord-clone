@@ -189,7 +189,7 @@ const Register: NextPage = () => {
           </Button>
         </form>
         <Box mt={2}>
-          <NextLink href="/">
+          <NextLink href="/login">
             <Link color="rgb(66, 153, 225)" fontWeight={500} fontSize={13}>
               Already have an account?
             </Link>

@@ -16,6 +16,7 @@
     "argon2": "^0.28.2",
     "cookie": "^0.4.1",
     "framer-motion": "4",
+    "isomorphic-unfetch": "^3.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "5.10.19",
     "next": "11.1.2",
