@@ -7,6 +7,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import authRoute from "./routes/auth";
+import frRoute from "./routes/fr";
 import User from "./models/User";
 
 const main = () => {
@@ -27,6 +28,7 @@ const main = () => {
   app.use(cookieParser());
 
   app.use("/api/auth", authRoute);
+  app.use("/api/fr", frRoute);
 
   const server = createServer(app);
   const io = new Server(server, {

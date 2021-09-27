@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from "@chakra-ui/layout";
-import type { GetServerSideProps, NextPage } from "next";
+import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import "@fontsource/open-sans";
 import { Button } from "@chakra-ui/button";
@@ -15,7 +15,7 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [fr, setFr] = useState(user?.fr.length || 0);
+  const [fr, setFr] = useState(user?.fr || []);
 
   useEffect(() => {
     socket.emit("init", user?._id, () => {
@@ -23,7 +23,17 @@ const Home: NextPage<PageProps> = ({ user }) => {
     });
 
     socket.on("fr", async () => {
-      // request
+      const res = await fetch("http://localhost:3001/api/fr", {
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const { fr } = await res.json();
+
+        console.log(fr);
+
+        setFr(fr);
+      }
     });
 
     return () => {
@@ -116,10 +126,10 @@ const Home: NextPage<PageProps> = ({ user }) => {
             onClick={() => setButtonState("pending")}
           >
             Pending
-            {fr > 0 && (
+            {fr.length > 0 && (
               <Box ml={2} width={4} as="span" borderRadius={25} bgColor="red">
                 <Text fontWeight="bold" color="white">
-                  {" " + fr}
+                  {" " + fr.length}
                 </Text>
               </Box>
             )}
