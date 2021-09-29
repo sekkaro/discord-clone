@@ -82,6 +82,20 @@ const Home: NextPage<PageProps> = ({ user }) => {
     );
   };
 
+  const cancelFriendRequest = async (id: string) => {
+    const res = await fetch(`http://localhost:3001/api/fr/${id}/reject`, {
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      const { fr } = await res.json();
+
+      console.log(fr);
+
+      setFr(fr);
+    }
+  };
+
   return (
     <Flex justifyContent="center" height="100vh">
       <Box width="20%">menu</Box>
@@ -229,6 +243,7 @@ const Home: NextPage<PageProps> = ({ user }) => {
                           <CheckIcon color="#cccccc" w={3} h={3} />
                         </Button>
                         <Button
+                          onClick={() => cancelFriendRequest(r._id)}
                           ml={3}
                           bgColor="outerspace"
                           _hover={{
