@@ -34,14 +34,14 @@ const Home: NextPage<PageProps> = ({ user }) => {
   };
 
   useEffect(() => {
-    socket.emit("init", user?._id, () => {
-      console.log("socket initialized");
-    });
+    // socket.emit("init", user?._id, () => {
+    //   console.log("socket initialized");
+    // });
 
     socket.on("fr", fetchFr);
 
     return () => {
-      socket.off("init");
+      // socket.off("init");
       socket.off("fr");
     };
   }, []);

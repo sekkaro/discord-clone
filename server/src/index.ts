@@ -5,10 +5,13 @@ import { Server } from "socket.io";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import cookie from "cookie";
+import jwt from "jsonwebtoken";
 
 import authRoute from "./routes/auth";
 import frRoute from "./routes/fr";
 import User from "./models/User";
+import { addUser, getSocket } from "./utils/users";
 
 const main = () => {
   const app = express();
@@ -37,25 +40,48 @@ const main = () => {
     },
   });
 
+  io.use((socket, next) => {
+    if (!socket.handshake.headers.cookie) {
+      socket.disconnect();
+      return;
+    }
+
+    const decoded: any = jwt.verify(
+      cookie.parse(socket.handshake.headers.cookie)["token"],
+      process.env.JWT_SECRET as string
+    );
+
+    if (!decoded.id) {
+      socket.disconnect();
+      return;
+    }
+
+    addUser(decoded.id, socket.id);
+
+    next();
+  });
+
   io.on("connection", (socket) => {
     console.log("new web socket connection");
 
-    socket.on("init", async (userId, callback) => {
-      await User.findByIdAndUpdate(
-        userId,
-        { socketId: socket.id },
-        { new: true }
-      );
+    // socket.on("init", async (userId, callback) => {
+    //   await User.findByIdAndUpdate(
+    //     userId,
+    //     { socketId: socket.id },
+    //     { new: true }
+    //   );
 
-      callback();
-    });
+    //   callback();
+    // });
 
     socket.on("sendFr", ({ username, id }, callback) => {
       User.findOne({ username }, async (_, user) => {
         if (!user) {
           return callback("user not found");
         }
-        const { _id, socketId } = user;
+        const { _id } = user;
+
+        const socketId = getSocket(_id);
 
         if (_id.toString() === id) {
           return callback("cannot send fr to yourself");
