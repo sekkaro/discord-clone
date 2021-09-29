@@ -68,9 +68,9 @@ const main = () => {
           });
           user.fr = fr;
           await user.save();
+          socket.broadcast.to(socketId).emit("fr");
         }
 
-        socket.broadcast.to(socketId).emit("fr");
         callback();
       });
     });

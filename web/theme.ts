@@ -6,7 +6,7 @@ const theme = extendTheme({
     white: "#fdfdfd",
     cloudy: "#b0aca7",
     oslogray: "#909397",
-    outerspace: "#323a42",
+    outerspace: "#30303e",
     gondola: "#090609",
     cornflowerblue: "#5864f4",
   },

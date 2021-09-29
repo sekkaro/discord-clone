@@ -5,9 +5,10 @@ import "@fontsource/open-sans";
 import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { FormControl } from "@chakra-ui/form-control";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import fetch from "isomorphic-unfetch";
 
-import { PageProps } from "../types";
+import { FrType, PageProps } from "../types";
 import { socket } from "../utils/context";
 
 const Home: NextPage<PageProps> = ({ user }) => {
@@ -16,31 +17,50 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fr, setFr] = useState(user?.fr || []);
+  const [pending, setPending] = useState(0);
+
+  const fetchFr = async () => {
+    const res = await fetch("http://localhost:3001/api/fr", {
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      const { fr } = await res.json();
+
+      console.log(fr);
+
+      setFr(fr);
+    }
+  };
 
   useEffect(() => {
     socket.emit("init", user?._id, () => {
       console.log("socket initialized");
     });
 
-    socket.on("fr", async () => {
-      const res = await fetch("http://localhost:3001/api/fr", {
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        const { fr } = await res.json();
-
-        console.log(fr);
-
-        setFr(fr);
-      }
-    });
+    socket.on("fr", fetchFr);
 
     return () => {
       socket.off("init");
       socket.off("fr");
     };
   }, []);
+
+  // useEffect(() => {
+  //   if (buttonState === "pending") {
+  //     fetchFr();
+  //   }
+  // }, [buttonState]);
+
+  useEffect(() => {
+    let count = 0;
+    fr.forEach((r) => {
+      if (r.type === FrType.IN) {
+        count += 1;
+      }
+    });
+    setPending(count);
+  }, [fr]);
 
   const sendFriendRequest = () => {
     socket.emit(
@@ -126,10 +146,10 @@ const Home: NextPage<PageProps> = ({ user }) => {
             onClick={() => setButtonState("pending")}
           >
             Pending
-            {fr.length > 0 && (
+            {pending > 0 && (
               <Box ml={2} width={4} as="span" borderRadius={25} bgColor="red">
                 <Text fontWeight="bold" color="white">
-                  {" " + fr.length}
+                  {" " + pending}
                 </Text>
               </Box>
             )}
@@ -168,7 +188,71 @@ const Home: NextPage<PageProps> = ({ user }) => {
             </>
           ) : buttonState === "pending" ? (
             <>
-              <Text>There are no pending friend requests</Text>
+              {fr.length > 0 ? (
+                <Box>
+                  <Text color="#cccccc" fontSize={12} fontWeight={700}>
+                    PENDING - {fr.length}
+                  </Text>
+                  <Box
+                    mt={2}
+                    mb={2}
+                    borderBottomWidth={0.5}
+                    borderBottomColor="oslogray"
+                  ></Box>
+                  {fr.map((r) => (
+                    <Flex key={r._id} justifyContent="space-between">
+                      <Box>
+                        <Text color="white" fontWeight={700}>
+                          {r.user.username}
+                        </Text>
+                        <Text color="#cccccc" fontSize={12}>
+                          {r.type === FrType.IN ? "Incoming " : "Outgoing "}
+                          Friend Request
+                        </Text>
+                      </Box>
+                      <Flex>
+                        <Button
+                          bgColor="outerspace"
+                          _hover={{
+                            bgColor: "gondola",
+                          }}
+                          _active={{
+                            bgColor: "outerspace",
+                          }}
+                          _focus={{
+                            boxShadow: "none",
+                            bgColor: "gondola",
+                          }}
+                          w={4}
+                          borderRadius={50}
+                        >
+                          <CheckIcon color="#cccccc" w={3} h={3} />
+                        </Button>
+                        <Button
+                          ml={3}
+                          bgColor="outerspace"
+                          _hover={{
+                            bgColor: "gondola",
+                          }}
+                          _active={{
+                            bgColor: "outerspace",
+                          }}
+                          _focus={{
+                            boxShadow: "none",
+                            bgColor: "gondola",
+                          }}
+                          w={4}
+                          borderRadius={50}
+                        >
+                          <CloseIcon color="#cccccc" w={3} h={3} />
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  ))}
+                </Box>
+              ) : (
+                <Text>There are no pending friend requests</Text>
+              )}
             </>
           ) : (
             <>
