@@ -11,6 +11,11 @@ export const authenticate = (
 ) => {
   const token = req.cookies["token"];
 
+  if (!token) {
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
   const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
   if (!decoded.id) {
     res.status(403).json({ message: "Forbidden" });

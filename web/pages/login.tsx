@@ -11,6 +11,7 @@ import { Button } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import Router from "next/router";
+import { login } from "../api/auth";
 
 interface LoginData {
   email: string;
@@ -31,25 +32,9 @@ const Login: NextPage = () => {
     const { email, password } = data;
 
     try {
-      const res = await fetch("http://localhost:3001/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-        credentials: "include",
-      });
+      const res = await login(email, password);
 
-      if (!res.ok) {
-        throw new Error("Login or password is invalid.");
-      }
-
-      const json = await res.json();
-
-      console.log(json);
+      console.log(res);
 
       Router.push("/");
     } catch (err: any) {

@@ -21,7 +21,7 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.get(
+router.delete(
   "/:id/reject",
   authenticate,
   async (req: AuthRequest, res: Response) => {

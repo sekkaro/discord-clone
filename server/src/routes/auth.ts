@@ -59,12 +59,13 @@ router.post("/signup", async (req: Request, res: Response) => {
     console.log(err);
 
     if (err.code === 11000) {
-      res
-        .status(200)
-        .json({ status: "failed", message: "Email is already registered" });
+      res.status(200).json({
+        status: "failed",
+        field: err.keyPattern.hasOwnProperty("email") ? "email" : "username",
+      });
       return;
     }
-    res.status(500).send("Internal server error");
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

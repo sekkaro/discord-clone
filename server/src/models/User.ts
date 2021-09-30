@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
+      unique: true,
     },
     email: {
       type: String,
@@ -16,9 +17,6 @@ const UserSchema = new mongoose.Schema(
       minLength: 8,
       maxLength: 100,
       required: true,
-    },
-    socketId: {
-      type: String,
     },
     fr: [
       {

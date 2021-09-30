@@ -7,6 +7,7 @@ import { Button } from "@chakra-ui/react";
 import NextLink from "next/link";
 import Router from "next/router";
 import { Controller, useForm } from "react-hook-form";
+import { register } from "../api/auth";
 
 interface RegisterData {
   email: string;
@@ -28,35 +29,20 @@ const Register: NextPage = () => {
     const { email, password, username } = data;
 
     try {
-      const res = await fetch("http://localhost:3001/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          username,
-        }),
-        credentials: "include",
-      });
+      const json = await register(email, password, username);
 
-      if (res.ok) {
-        const json = await res.json();
+      console.log(json);
 
-        console.log(json);
-
-        if (json.status === "failed") {
-          setError("email", {
-            message: json.message,
-          });
-          return;
-        }
-
-        Router.push("/");
-      }
+      Router.push("/");
     } catch (err: any) {
       console.log(err);
+      if (err.status === "failed") {
+        setError(err.field, {
+          message:
+            err.field.replace(/(^\w|\s\w)/g, (m: string) => m.toUpperCase()) +
+            " is already registered",
+        });
+      }
     }
   };
   return (
@@ -122,7 +108,19 @@ const Register: NextPage = () => {
             render={({ field: { onChange, onBlur, value } }) => (
               <FormControl mt={4} id="username">
                 <FormLabel fontSize={12} color="#c2c2c2" fontWeight={700}>
-                  USERNAME
+                  <Text color={errors?.username?.message ? "red" : "#c2c2c2"}>
+                    USERNAME
+                    {errors?.username?.message && (
+                      <Text
+                        fontStyle="italic"
+                        as="span"
+                        fontWeight="200"
+                        fontSize={12}
+                      >
+                        {" - " + errors?.username?.message}
+                      </Text>
+                    )}
+                  </Text>
                 </FormLabel>
                 <Input
                   borderColor="black"
@@ -130,6 +128,10 @@ const Register: NextPage = () => {
                   _hover={{
                     borderColor: "black",
                   }}
+                  _invalid={{
+                    borderColor: "red",
+                  }}
+                  isInvalid={errors?.username?.message}
                   color="#cccccc"
                   fontWeight={500}
                   fontSize={16}
@@ -150,9 +152,7 @@ const Register: NextPage = () => {
             render={({ field: { onChange, onBlur, value } }) => (
               <FormControl mt={4} id="password">
                 <FormLabel fontSize={12} color="#c2c2c2" fontWeight={700}>
-                  <Text color={errors?.password?.message ? "red" : "#c2c2c2"}>
-                    PASSWORD
-                  </Text>
+                  <Text color="#c2c2c2">PASSWORD</Text>
                 </FormLabel>
                 <Input
                   borderColor="black"

@@ -6,10 +6,13 @@ import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { FormControl } from "@chakra-ui/form-control";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import fetch from "isomorphic-unfetch";
 
 import { FrType, PageProps } from "../types";
 import { socket } from "../utils/context";
+import {
+  cancelFriendRequest as cancelFriendRequestAPI,
+  fetchFr,
+} from "../api/fr";
 
 const Home: NextPage<PageProps> = ({ user }) => {
   const [buttonState, setButtonState] = useState("all");
@@ -19,38 +22,18 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const [fr, setFr] = useState(user?.fr || []);
   const [pending, setPending] = useState(0);
 
-  const fetchFr = async () => {
-    const res = await fetch("http://localhost:3001/api/fr", {
-      credentials: "include",
+  useEffect(() => {
+    socket.on("fr", async () => {
+      const fr = await fetchFr();
+      if (fr) {
+        setFr(fr);
+      }
     });
 
-    if (res.ok) {
-      const { fr } = await res.json();
-
-      console.log(fr);
-
-      setFr(fr);
-    }
-  };
-
-  useEffect(() => {
-    // socket.emit("init", user?._id, () => {
-    //   console.log("socket initialized");
-    // });
-
-    socket.on("fr", fetchFr);
-
     return () => {
-      // socket.off("init");
       socket.off("fr");
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (buttonState === "pending") {
-  //     fetchFr();
-  //   }
-  // }, [buttonState]);
 
   useEffect(() => {
     let count = 0;
@@ -66,7 +49,7 @@ const Home: NextPage<PageProps> = ({ user }) => {
     socket.emit(
       "sendFr",
       { username, id: user?._id },
-      (error: string | undefined) => {
+      async (error: string | undefined) => {
         if (error) {
           console.log(error);
           setError(
@@ -75,6 +58,7 @@ const Home: NextPage<PageProps> = ({ user }) => {
           setSuccess("");
           return;
         }
+        // setfr (outgoing)
         setSuccess(`Success! Your friend request to ${username} was sent`);
         setUsername("");
         setError("");
@@ -83,15 +67,8 @@ const Home: NextPage<PageProps> = ({ user }) => {
   };
 
   const cancelFriendRequest = async (id: string) => {
-    const res = await fetch(`http://localhost:3001/api/fr/${id}/reject`, {
-      credentials: "include",
-    });
-
-    if (res.ok) {
-      const { fr } = await res.json();
-
-      console.log(fr);
-
+    const fr = await cancelFriendRequestAPI(id);
+    if (fr) {
       setFr(fr);
     }
   };

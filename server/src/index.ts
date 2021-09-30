@@ -64,16 +64,6 @@ const main = () => {
   io.on("connection", (socket) => {
     console.log("new web socket connection");
 
-    // socket.on("init", async (userId, callback) => {
-    //   await User.findByIdAndUpdate(
-    //     userId,
-    //     { socketId: socket.id },
-    //     { new: true }
-    //   );
-
-    //   callback();
-    // });
-
     socket.on("sendFr", ({ username, id }, callback) => {
       User.findOne({ username }, async (_, user) => {
         if (!user) {
