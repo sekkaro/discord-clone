@@ -11,4 +11,4 @@ export const addUser = (userId: string, socketId: string) => {
   };
 };
 
-export const getSocket = (userId: string) => users[userId].socketId;
+export const getSocket = (userId: string) => users[userId]?.socketId;

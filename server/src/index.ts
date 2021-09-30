@@ -65,7 +65,46 @@ const main = () => {
     console.log("new web socket connection");
 
     socket.on("sendFr", ({ username, id }, callback) => {
-      User.findOne({ username }, async (_, user) => {
+      User.findOne({ username }, async (error, user) => {
+        if (error) {
+          return callback(error, null);
+        }
+        if (!user) {
+          return callback("user not found", null);
+        }
+        const { _id } = user;
+
+        const socketId = getSocket(_id);
+
+        if (_id.toString() === id) {
+          return callback("cannot send fr to yourself", null);
+        }
+
+        const fr: Array<any> = user.fr ? user.fr : [];
+
+        const isDuplicate = fr.find(({ user }) => user.toString() === id);
+
+        if (!isDuplicate) {
+          fr.push({
+            user: mongoose.Types.ObjectId(id),
+            type: "in",
+          });
+          user.fr = fr;
+          await user.save();
+          if (socketId) {
+            socket.broadcast.to(socketId).emit("fr");
+          }
+        }
+
+        callback(null, { userId: _id, isDuplicate });
+      });
+    });
+
+    socket.on("cancelFr", async ({ userId, senderId }, callback) => {
+      User.findById(userId, async (error, user) => {
+        if (error) {
+          return callback(error);
+        }
         if (!user) {
           return callback("user not found");
         }
@@ -73,20 +112,19 @@ const main = () => {
 
         const socketId = getSocket(_id);
 
-        if (_id.toString() === id) {
-          return callback("cannot send fr to yourself");
-        }
-
         const fr: Array<any> = user.fr ? user.fr : [];
 
-        if (!fr.find(({ user }) => user.toString() === id)) {
-          fr.push({
-            user: mongoose.Types.ObjectId(id),
-            type: "in",
-          });
+        const idx = fr.findIndex(
+          ({ user, type }) => user.toString() === senderId && type === "in"
+        );
+
+        if (idx >= 0) {
+          fr.splice(idx, 1);
           user.fr = fr;
           await user.save();
-          socket.broadcast.to(socketId).emit("fr");
+          if (socketId) {
+            socket.broadcast.to(socketId).emit("fr");
+          }
         }
 
         callback();

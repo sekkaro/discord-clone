@@ -9,6 +9,7 @@ export type PageProps = {
 export type Fr = {
   _id: string;
   user: {
+    _id: string;
     username: string;
   };
   type: string;

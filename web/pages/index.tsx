@@ -1,6 +1,12 @@
 import { Box, Flex, Text } from "@chakra-ui/layout";
 import type { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, {
+  LegacyRef,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "@fontsource/open-sans";
 import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
@@ -11,6 +17,7 @@ import { FrType, PageProps } from "../types";
 import { socket } from "../utils/context";
 import {
   cancelFriendRequest as cancelFriendRequestAPI,
+  sendFriendRequest as sendFriendRequestAPI,
   fetchFr,
 } from "../api/fr";
 
@@ -21,6 +28,7 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const [success, setSuccess] = useState("");
   const [fr, setFr] = useState(user?.fr || []);
   const [pending, setPending] = useState(0);
+  const inputRef = useRef() as LegacyRef<HTMLInputElement>;
 
   useEffect(() => {
     socket.on("fr", async () => {
@@ -45,31 +53,67 @@ const Home: NextPage<PageProps> = ({ user }) => {
     setPending(count);
   }, [fr]);
 
+  useEffect(() => {
+    if (buttonState !== "add") {
+      setSuccess("");
+      setError("");
+      setUsername("");
+    } else {
+      (inputRef as MutableRefObject<HTMLInputElement>).current?.focus();
+    }
+  }, [buttonState]);
+
   const sendFriendRequest = () => {
     socket.emit(
       "sendFr",
       { username, id: user?._id },
-      async (error: string | undefined) => {
+      async (
+        error: string | null,
+        data: { userId: string; isDuplicate: boolean } | null
+      ) => {
         if (error) {
           console.log(error);
           setError(
             "Hm, didn't work. Double check that the capitalization, spelling, any spaces, and numbers are correct."
           );
           setSuccess("");
-          return;
         }
-        // setfr (outgoing)
-        setSuccess(`Success! Your friend request to ${username} was sent`);
-        setUsername("");
-        setError("");
+        if (data) {
+          setSuccess(`Success! Your friend request to ${username} was sent`);
+          setUsername("");
+          setError("");
+          if (!data.isDuplicate) {
+            const fr = await sendFriendRequestAPI(data.userId);
+            if (fr) {
+              setFr(fr);
+            }
+          }
+        }
       }
     );
   };
 
-  const cancelFriendRequest = async (id: string) => {
+  const cancelFriendRequest = async (
+    id: string,
+    type: string,
+    userId: string
+  ) => {
     const fr = await cancelFriendRequestAPI(id);
-    if (fr) {
-      setFr(fr);
+    if (!fr) {
+      // oops try again
+      return;
+    }
+    setFr(fr);
+    if (type === FrType.OUT) {
+      socket.emit(
+        "cancelFr",
+        { userId, senderId: user?._id },
+        (error: string | undefined) => {
+          if (error) {
+            console.log(error);
+          }
+        }
+      );
     }
   };
 
@@ -202,25 +246,29 @@ const Home: NextPage<PageProps> = ({ user }) => {
                         </Text>
                       </Box>
                       <Flex>
+                        {r.type === FrType.IN && (
+                          <Button
+                            bgColor="outerspace"
+                            _hover={{
+                              bgColor: "gondola",
+                            }}
+                            _active={{
+                              bgColor: "outerspace",
+                            }}
+                            _focus={{
+                              boxShadow: "none",
+                              bgColor: "gondola",
+                            }}
+                            w={4}
+                            borderRadius={50}
+                          >
+                            <CheckIcon color="#cccccc" w={3} h={3} />
+                          </Button>
+                        )}
                         <Button
-                          bgColor="outerspace"
-                          _hover={{
-                            bgColor: "gondola",
-                          }}
-                          _active={{
-                            bgColor: "outerspace",
-                          }}
-                          _focus={{
-                            boxShadow: "none",
-                            bgColor: "gondola",
-                          }}
-                          w={4}
-                          borderRadius={50}
-                        >
-                          <CheckIcon color="#cccccc" w={3} h={3} />
-                        </Button>
-                        <Button
-                          onClick={() => cancelFriendRequest(r._id)}
+                          onClick={() =>
+                            cancelFriendRequest(r._id, r.type, r.user._id)
+                          }
                           ml={3}
                           bgColor="outerspace"
                           _hover={{
@@ -262,16 +310,18 @@ const Home: NextPage<PageProps> = ({ user }) => {
                     _placeholder={{
                       color: "oslogray",
                     }}
-                    borderColor="black"
+                    borderColor={success ? "green" : "black"}
                     backgroundColor="#292b29"
                     _hover={{
-                      borderColor: "black",
+                      borderColor: success ? "green" : "black",
                     }}
                     color="#cccccc"
                     fontWeight={500}
                     fontSize={16}
                     onChange={(e) => {
                       setUsername(e.target.value);
+                      setError("");
+                      setSuccess("");
                     }}
                     _invalid={{
                       borderColor: "red",
@@ -279,8 +329,16 @@ const Home: NextPage<PageProps> = ({ user }) => {
                     _valid={{
                       borderColor: "green",
                     }}
+                    _focus={{
+                      borderColor: success
+                        ? "green"
+                        : error
+                        ? "red"
+                        : "rgb(66, 153, 225)",
+                    }}
                     value={username}
                     isInvalid={!!error}
+                    ref={inputRef}
                   />
                   <InputRightElement
                     mt={1}

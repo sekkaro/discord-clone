@@ -8,7 +8,7 @@ export const fetchFr = async () => {
   });
 
   if (!res.ok) {
-    return undefined;
+    return null;
   }
 
   const { fr } = await res.json();
@@ -23,7 +23,28 @@ export const cancelFriendRequest = async (id: string) => {
   });
 
   if (!res.ok) {
-    return undefined;
+    return null;
+  }
+
+  const { fr } = await res.json();
+
+  return fr;
+};
+
+export const sendFriendRequest = async (userId: string) => {
+  const res = await fetch(`${API_URI}/api/fr`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      userId,
+    }),
+  });
+
+  if (!res.ok) {
+    return null;
   }
 
   const { fr } = await res.json();

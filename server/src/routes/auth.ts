@@ -73,7 +73,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findById(req.userId).populate(
       "fr.user",
-      "username"
+      "_id username"
     );
     const { _id, username, fr } = user._doc;
     res.status(200).json({ _id, username, fr });
