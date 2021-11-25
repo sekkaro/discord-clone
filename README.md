@@ -1,6 +1,6 @@
 ## Getting started with codespaces
 
-First install localtunnel[https://github.com/localtunnel/localtunnel]:
+First install [localtunnel](https://github.com/localtunnel/localtunnel):
 
 ```bash
 npm install -g localtunnel
