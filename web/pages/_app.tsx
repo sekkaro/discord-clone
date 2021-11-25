@@ -17,7 +17,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 MyApp.getInitialProps = async (appContext: AppContext) => {
   const { ctx, Component } = appContext;
   let pageProps: PageProps = {};
-  const res = await fetch("http://localhost:3001/api/auth/me", {
+  const res = await fetch(`${process.env.API_URI}/api/auth/me`, {
     credentials: "include",
     headers: {
       cookie: (ctx.req as any)?.headers.cookie,
