@@ -72,11 +72,11 @@ router.post("/signup", async (req: Request, res: Response) => {
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findById(req.userId).populate(
-      "fr.user",
+      "fr.user friends",
       "_id username"
     );
-    const { _id, username, fr } = user._doc;
-    res.status(200).json({ _id, username, fr });
+    const { _id, username, fr, friends } = user._doc;
+    res.status(200).json({ _id, username, fr, friends });
   } catch (err) {
     console.log(err);
 

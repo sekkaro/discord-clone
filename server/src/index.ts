@@ -12,6 +12,7 @@ import authRoute from "./routes/auth";
 import frRoute from "./routes/fr";
 import User from "./models/User";
 import { addUser, getSocket } from "./utils/users";
+import { AuthRequest } from "./types";
 
 const main = () => {
   const app = express();
@@ -30,15 +31,20 @@ const main = () => {
   );
   app.use(cookieParser());
 
-  app.use("/api/auth", authRoute);
-  app.use("/api/fr", frRoute);
-
   const server = createServer(app);
   const io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL,
     },
   });
+
+  app.use((req: AuthRequest, _, next) => {
+    req.io = io;
+    next();
+  });
+
+  app.use("/api/auth", authRoute);
+  app.use("/api/fr", frRoute);
 
   io.use((socket, next) => {
     if (!socket.handshake.headers.cookie) {
@@ -64,7 +70,7 @@ const main = () => {
   io.on("connection", (socket) => {
     console.log("new web socket connection");
 
-    socket.on("sendFr", ({ username, id }, callback) => {
+    /*socket.on("sendFr", ({ username, id }, callback) => {
       User.findOne({ username }, async (error, user) => {
         if (error) {
           return callback(error, null);
@@ -98,38 +104,49 @@ const main = () => {
 
         callback(null, { userId: _id, isDuplicate });
       });
-    });
+    });*/
 
-    socket.on("cancelFr", async ({ userId, senderId }, callback) => {
-      User.findById(userId, async (error, user) => {
-        if (error) {
-          return callback(error);
-        }
-        if (!user) {
-          return callback("user not found");
-        }
-        const { _id } = user;
-
-        const socketId = getSocket(_id);
-
-        const fr: Array<any> = user.fr ? user.fr : [];
-
-        const idx = fr.findIndex(
-          ({ user, type }) => user.toString() === senderId && type === "in"
-        );
-
-        if (idx >= 0) {
-          fr.splice(idx, 1);
-          user.fr = fr;
-          await user.save();
-          if (socketId) {
-            socket.broadcast.to(socketId).emit("fr");
+    socket.on(
+      "updateUser",
+      async ({ userId, senderId, isAccept }, callback) => {
+        User.findById(userId, async (error, user) => {
+          if (error) {
+            return callback(error);
           }
-        }
+          if (!user) {
+            return callback("user not found");
+          }
+          const { _id } = user;
 
-        callback();
-      });
-    });
+          const socketId = getSocket(_id);
+
+          const fr: Array<any> = user.fr ? user.fr : [];
+
+          const idx = fr.findIndex(({ user, type }) =>
+            user.toString() === senderId && type === isAccept ? "out" : "in"
+          );
+
+          if (isAccept) {
+            await User.findByIdAndUpdate(userId, {
+              $push: {
+                friends: senderId,
+              },
+            });
+          }
+
+          if (idx >= 0) {
+            fr.splice(idx, 1);
+            user.fr = fr;
+            await user.save();
+            if (socketId) {
+              socket.broadcast.to(socketId).emit("user");
+            }
+          }
+
+          callback();
+        });
+      }
+    );
 
     socket.on("disconnect", () => {
       console.log("disconnected");

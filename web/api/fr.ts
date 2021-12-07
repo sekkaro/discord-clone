@@ -2,8 +2,8 @@ import fetch from "isomorphic-unfetch";
 
 const API_URI = process.env.API_URI;
 
-export const fetchFr = async () => {
-  const res = await fetch(`${API_URI}/api/fr`, {
+export const fetchUser = async () => {
+  const res = await fetch(`${API_URI}/api/auth/me`, {
     credentials: "include",
   });
 
@@ -11,9 +11,9 @@ export const fetchFr = async () => {
     return null;
   }
 
-  const { fr } = await res.json();
+  const data = await res.json();
 
-  return fr;
+  return data;
 };
 
 export const cancelFriendRequest = async (id: string) => {
@@ -31,8 +31,8 @@ export const cancelFriendRequest = async (id: string) => {
   return fr;
 };
 
-export const sendFriendRequest = async (userId: string) => {
-  const res = await fetch(`${API_URI}/api/fr`, {
+export const acceptFriendRequest = async (id: string, userId: string) => {
+  const res = await fetch(`${API_URI}/api/fr/${id}/accept`, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -47,7 +47,24 @@ export const sendFriendRequest = async (userId: string) => {
     return null;
   }
 
-  const { fr } = await res.json();
+  const data = await res.json();
 
-  return fr;
+  return data;
+};
+
+export const sendFriendRequest = async (username: string) => {
+  const res = await fetch(`${API_URI}/api/fr`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      username,
+    }),
+  });
+
+  const data = await res.json();
+
+  return data;
 };

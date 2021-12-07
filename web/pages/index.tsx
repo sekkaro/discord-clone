@@ -11,15 +11,16 @@ import "@fontsource/open-sans";
 import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { FormControl } from "@chakra-ui/form-control";
-import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
 import { FrType, PageProps } from "../types";
 import { socket } from "../utils/context";
 import {
   cancelFriendRequest as cancelFriendRequestAPI,
   sendFriendRequest as sendFriendRequestAPI,
-  fetchFr,
+  acceptFriendRequest as acceptFriendRequestAPI,
+  fetchUser,
 } from "../api/fr";
+import FriendList from "../components/FriendList";
 
 const Home: NextPage<PageProps> = ({ user }) => {
   const [buttonState, setButtonState] = useState("all");
@@ -27,19 +28,19 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fr, setFr] = useState(user?.fr || []);
+  const [friends, setFriends] = useState(user?.friends || []);
   const [pending, setPending] = useState(0);
   const inputRef = useRef() as LegacyRef<HTMLInputElement>;
 
   useEffect(() => {
-    socket.on("fr", async () => {
-      const fr = await fetchFr();
-      if (fr) {
-        setFr(fr);
-      }
+    socket.on("user", async () => {
+      const { fr, friends } = await fetchUser();
+      setFr(fr);
+      setFriends(friends);
     });
 
     return () => {
-      socket.off("fr");
+      socket.off("user");
     };
   }, []);
 
@@ -63,34 +64,21 @@ const Home: NextPage<PageProps> = ({ user }) => {
     }
   }, [buttonState]);
 
-  const sendFriendRequest = () => {
-    socket.emit(
-      "sendFr",
-      { username, id: user?._id },
-      async (
-        error: string | null,
-        data: { userId: string; isDuplicate: boolean } | null
-      ) => {
-        if (error) {
-          console.log(error);
-          setError(
-            "Hm, didn't work. Double check that the capitalization, spelling, any spaces, and numbers are correct."
-          );
-          setSuccess("");
-        }
-        if (data) {
-          setSuccess(`Success! Your friend request to ${username} was sent`);
-          setUsername("");
-          setError("");
-          if (!data.isDuplicate) {
-            const fr = await sendFriendRequestAPI(data.userId);
-            if (fr) {
-              setFr(fr);
-            }
-          }
-        }
-      }
-    );
+  const sendFriendRequest = async () => {
+    const { message, fr } = await sendFriendRequestAPI(username);
+    if (!fr) {
+      console.log(message);
+      setError(
+        "Hm, didn't work. Double check that the capitalization, spelling, any spaces, and numbers are correct."
+      );
+      setSuccess("");
+      return;
+    }
+
+    setSuccess(`Success! Your friend request to ${username} was sent`);
+    setUsername("");
+    setError("");
+    setFr(fr);
   };
 
   const cancelFriendRequest = async (
@@ -106,8 +94,8 @@ const Home: NextPage<PageProps> = ({ user }) => {
     setFr(fr);
     if (type === FrType.OUT) {
       socket.emit(
-        "cancelFr",
-        { userId, senderId: user?._id },
+        "updateUser",
+        { userId, senderId: user?._id, isAccept: false },
         (error: string | undefined) => {
           if (error) {
             console.log(error);
@@ -115,6 +103,25 @@ const Home: NextPage<PageProps> = ({ user }) => {
         }
       );
     }
+  };
+
+  const acceptFriendRequest = async (id: string, userId: string) => {
+    const { fr, friends, message } = await acceptFriendRequestAPI(id, userId);
+    if (message) {
+      // oops try again
+      return;
+    }
+    setFr(fr);
+    setFriends(friends);
+    socket.emit(
+      "updateUser",
+      { userId, senderId: user?._id, isAccept: true },
+      (error: string | undefined) => {
+        if (error) {
+          console.log(error);
+        }
+      }
+    );
   };
 
   return (
@@ -218,82 +225,14 @@ const Home: NextPage<PageProps> = ({ user }) => {
         </Flex>
         <Box p={4}>
           {buttonState === "all" ? (
-            <>
-              <Text>ALL FRIENDS</Text>
-            </>
+            <FriendList data={friends} type={buttonState} />
           ) : buttonState === "pending" ? (
-            <>
-              {fr.length > 0 ? (
-                <Box>
-                  <Text color="#cccccc" fontSize={12} fontWeight={700}>
-                    PENDING - {fr.length}
-                  </Text>
-                  <Box
-                    mt={2}
-                    mb={2}
-                    borderBottomWidth={0.5}
-                    borderBottomColor="oslogray"
-                  ></Box>
-                  {fr.map((r) => (
-                    <Flex key={r._id} justifyContent="space-between">
-                      <Box>
-                        <Text color="white" fontWeight={700}>
-                          {r.user.username}
-                        </Text>
-                        <Text color="#cccccc" fontSize={12}>
-                          {r.type === FrType.IN ? "Incoming " : "Outgoing "}
-                          Friend Request
-                        </Text>
-                      </Box>
-                      <Flex>
-                        {r.type === FrType.IN && (
-                          <Button
-                            bgColor="outerspace"
-                            _hover={{
-                              bgColor: "gondola",
-                            }}
-                            _active={{
-                              bgColor: "outerspace",
-                            }}
-                            _focus={{
-                              boxShadow: "none",
-                              bgColor: "gondola",
-                            }}
-                            w={4}
-                            borderRadius={50}
-                          >
-                            <CheckIcon color="#cccccc" w={3} h={3} />
-                          </Button>
-                        )}
-                        <Button
-                          onClick={() =>
-                            cancelFriendRequest(r._id, r.type, r.user._id)
-                          }
-                          ml={3}
-                          bgColor="outerspace"
-                          _hover={{
-                            bgColor: "gondola",
-                          }}
-                          _active={{
-                            bgColor: "outerspace",
-                          }}
-                          _focus={{
-                            boxShadow: "none",
-                            bgColor: "gondola",
-                          }}
-                          w={4}
-                          borderRadius={50}
-                        >
-                          <CloseIcon color="#cccccc" w={3} h={3} />
-                        </Button>
-                      </Flex>
-                    </Flex>
-                  ))}
-                </Box>
-              ) : (
-                <Text>There are no pending friend requests</Text>
-              )}
-            </>
+            <FriendList
+              data={fr}
+              type={buttonState}
+              acceptFriendRequest={acceptFriendRequest}
+              cancelFriendRequest={cancelFriendRequest}
+            />
           ) : (
             <>
               <Text color="white" fontWeight={500}>
