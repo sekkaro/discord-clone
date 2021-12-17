@@ -5,8 +5,18 @@ import fetch from "isomorphic-unfetch";
 import theme from "../theme";
 import { PageProps } from "../types";
 import { redirectUser } from "../utils/redirectUser";
+import Layout from "../layout/Layout";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps, router }: AppProps) {
+  if (router.pathname === "/") {
+    return (
+      <ChakraProvider theme={theme}>
+        <Layout router={router}>
+          <Component {...pageProps} />
+        </Layout>
+      </ChakraProvider>
+    );
+  }
   return (
     <ChakraProvider theme={theme}>
       <Component {...pageProps} />

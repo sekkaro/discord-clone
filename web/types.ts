@@ -1,3 +1,5 @@
+import { NextRouter } from "next/router";
+
 export type PageProps = {
   user?: {
     _id: string;
@@ -5,6 +7,10 @@ export type PageProps = {
     fr: [Fr];
     friends: [User];
   };
+};
+
+export type WithRouter = {
+  router: NextRouter;
 };
 
 export type Fr = {

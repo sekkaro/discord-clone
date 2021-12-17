@@ -73,8 +73,8 @@ const Friend = ({ r }: any) => (
     <Box
       mt={2}
       mb={2}
-      borderBottomWidth={0.5}
-      borderBottomColor="oslogray"
+      borderBottomWidth="thin"
+      borderBottomColor="#474747"
     ></Box>
     <Flex justifyContent="space-between">
       <Box>
