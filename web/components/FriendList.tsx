@@ -120,7 +120,7 @@ const FriendList = ({
         </Text>
         {data.map((r: any) => {
           return type === "all" ? (
-            <Friend key={r._id} r={r} />
+            <Friend key={r._id} r={r.user} />
           ) : (
             <Request
               key={r._id}

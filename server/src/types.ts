@@ -18,3 +18,13 @@ export type Fr = {
     _id: string;
   };
 };
+
+export type Error = {
+  message: string;
+  status?: number;
+};
+
+export enum FrType {
+  IN = "in",
+  OUT = "out",
+}

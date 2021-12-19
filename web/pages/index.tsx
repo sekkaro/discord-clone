@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { withRouter } from "next/router";
 import "@fontsource/open-sans";
 import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
@@ -85,44 +84,24 @@ const Home: NextPage<PageProps> = ({ user }) => {
   const cancelFriendRequest = async (
     id: string,
     type: string,
-    userId: string
+    senderId: string
   ) => {
-    const fr = await cancelFriendRequestAPI(id);
+    const fr = await cancelFriendRequestAPI(id, type, senderId);
     if (!fr) {
       // oops try again
       return;
     }
     setFr(fr);
-    if (type === FrType.OUT) {
-      socket.emit(
-        "updateUser",
-        { userId, senderId: user?._id, isAccept: false },
-        (error: string | undefined) => {
-          if (error) {
-            console.log(error);
-          }
-        }
-      );
-    }
   };
 
-  const acceptFriendRequest = async (id: string, userId: string) => {
-    const { fr, friends, message } = await acceptFriendRequestAPI(id, userId);
+  const acceptFriendRequest = async (id: string, senderId: string) => {
+    const { fr, friends, message } = await acceptFriendRequestAPI(id, senderId);
     if (message) {
       // oops try again
       return;
     }
     setFr(fr);
     setFriends(friends);
-    socket.emit(
-      "updateUser",
-      { userId, senderId: user?._id, isAccept: true },
-      (error: string | undefined) => {
-        if (error) {
-          console.log(error);
-        }
-      }
-    );
   };
 
   return (

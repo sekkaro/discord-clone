@@ -10,8 +10,7 @@ import jwt from "jsonwebtoken";
 
 import authRoute from "./routes/auth";
 import frRoute from "./routes/fr";
-import User from "./models/User";
-import { addUser, getSocket } from "./utils/users";
+import { addUser } from "./utils/users";
 import { AuthRequest } from "./types";
 
 const main = () => {
@@ -69,84 +68,6 @@ const main = () => {
 
   io.on("connection", (socket) => {
     console.log("new web socket connection");
-
-    /*socket.on("sendFr", ({ username, id }, callback) => {
-      User.findOne({ username }, async (error, user) => {
-        if (error) {
-          return callback(error, null);
-        }
-        if (!user) {
-          return callback("user not found", null);
-        }
-        const { _id } = user;
-
-        const socketId = getSocket(_id);
-
-        if (_id.toString() === id) {
-          return callback("cannot send fr to yourself", null);
-        }
-
-        const fr: Array<any> = user.fr ? user.fr : [];
-
-        const isDuplicate = fr.find(({ user }) => user.toString() === id);
-
-        if (!isDuplicate) {
-          fr.push({
-            user: mongoose.Types.ObjectId(id),
-            type: "in",
-          });
-          user.fr = fr;
-          await user.save();
-          if (socketId) {
-            socket.broadcast.to(socketId).emit("fr");
-          }
-        }
-
-        callback(null, { userId: _id, isDuplicate });
-      });
-    });*/
-
-    socket.on(
-      "updateUser",
-      async ({ userId, senderId, isAccept }, callback) => {
-        User.findById(userId, async (error, user) => {
-          if (error) {
-            return callback(error);
-          }
-          if (!user) {
-            return callback("user not found");
-          }
-          const { _id } = user;
-
-          const socketId = getSocket(_id);
-
-          const fr: Array<any> = user.fr ? user.fr : [];
-
-          const idx = fr.findIndex(({ user, type }) =>
-            user.toString() === senderId && type === isAccept ? "out" : "in"
-          );
-
-          if (isAccept) {
-            await User.findByIdAndUpdate(userId, {
-              $push: {
-                friends: senderId,
-              },
-            });
-          }
-
-          if (idx >= 0) {
-            fr.splice(idx, 1);
-            user.fr = fr;
-            await user.save();
-            if (socketId) {
-              socket.broadcast.to(socketId).emit("user");
-            }
-          }
-
-          callback();
-        });
-      }
-    );
 
     socket.on("disconnect", () => {
       console.log("disconnected");

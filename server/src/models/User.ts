@@ -32,8 +32,14 @@ const UserSchema = new mongoose.Schema(
     ],
     friends: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        channel: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Channel",
+        },
       },
     ],
   },

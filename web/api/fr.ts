@@ -16,10 +16,21 @@ export const fetchUser = async () => {
   return data;
 };
 
-export const cancelFriendRequest = async (id: string) => {
+export const cancelFriendRequest = async (
+  id: string,
+  type: string,
+  senderId: string
+) => {
   const res = await fetch(`${API_URI}/api/fr/${id}/reject`, {
-    method: "DELETE",
+    method: "POST",
     credentials: "include",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      senderId,
+      type,
+    }),
   });
 
   if (!res.ok) {
@@ -31,7 +42,7 @@ export const cancelFriendRequest = async (id: string) => {
   return fr;
 };
 
-export const acceptFriendRequest = async (id: string, userId: string) => {
+export const acceptFriendRequest = async (id: string, senderId: string) => {
   const res = await fetch(`${API_URI}/api/fr/${id}/accept`, {
     method: "POST",
     credentials: "include",
@@ -39,7 +50,7 @@ export const acceptFriendRequest = async (id: string, userId: string) => {
       "Content-type": "application/json",
     },
     body: JSON.stringify({
-      userId,
+      senderId,
     }),
   });
 

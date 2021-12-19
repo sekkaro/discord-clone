@@ -1,10 +1,12 @@
 import express, { Response } from "express";
 import mongoose from "mongoose";
 
-import { AuthRequest } from "../types";
+import { AuthRequest, FrType } from "../types";
 import { authenticate } from "../utils/middlewares";
 import User from "../models/User";
 import { getSocket } from "../utils/users";
+import { notifyFrSender } from "../utils/notifyFrSender";
+import { createChannel } from "../utils/createChannel";
 
 const router = express.Router();
 
@@ -29,13 +31,22 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const frId = req.params.id;
-      const { userId } = req.body;
+      const {
+        body: { senderId },
+        userId,
+        io,
+      } = req;
+
+      const channelId = await createChannel([userId, senderId]);
 
       const user = await User.findByIdAndUpdate(
-        req.userId,
+        userId,
         {
           $push: {
-            friends: userId,
+            friends: {
+              user: senderId,
+              channel: channelId,
+            },
           },
           $pull: {
             fr: {
@@ -44,7 +55,22 @@ router.post(
           },
         },
         { new: true }
-      ).populate("fr.user friends", "_id username");
+      ).populate("fr.user friends.user", "_id username");
+
+      const { error } = await notifyFrSender(
+        senderId,
+        userId as string,
+        true,
+        io,
+        channelId
+      );
+
+      if (error) {
+        res
+          .status(error.status ? error.status : 500)
+          .json({ message: error.message });
+        return;
+      }
 
       const { fr, friends } = user._doc;
 
@@ -57,12 +83,17 @@ router.post(
   }
 );
 
-router.delete(
+router.post(
   "/:id/reject",
   authenticate,
   async (req: AuthRequest, res: Response) => {
     try {
       const frId = req.params.id;
+      const {
+        body: { senderId, type },
+        userId,
+        io,
+      } = req;
 
       const user = await User.findByIdAndUpdate(
         req.userId,
@@ -75,6 +106,22 @@ router.delete(
         },
         { new: true }
       ).populate("fr.user", "_id username");
+
+      if (type === FrType.OUT) {
+        const { error } = await notifyFrSender(
+          senderId,
+          userId as string,
+          false,
+          io
+        );
+
+        if (error) {
+          res
+            .status(error.status ? error.status : 500)
+            .json({ message: error.message });
+          return;
+        }
+      }
 
       const { fr } = user._doc;
 
@@ -102,7 +149,11 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    let { _id, fr }: { fr: Array<any>; _id: string } = target._doc;
+    let {
+      _id,
+      fr,
+      friends,
+    }: { fr: Array<any>; _id: string; friends: Array<any> } = target._doc;
 
     if (_id.toString() === userId) {
       res.status(409).json({ message: "cannot send fr to yourself" });
@@ -112,6 +163,12 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
     const socketId = getSocket(_id);
 
     const isDuplicate = fr.find(({ user }) => user.toString() === userId);
+    const isFriend = friends.find(({ user }) => user.toString() === userId);
+
+    if (isFriend) {
+      res.status(409).json({ message: "already friends with that user" });
+      return;
+    }
 
     if (!isDuplicate) {
       fr.push({

@@ -72,7 +72,7 @@ router.post("/signup", async (req: Request, res: Response) => {
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findById(req.userId).populate(
-      "fr.user friends",
+      "fr.user friends.user",
       "_id username"
     );
     const { _id, username, fr, friends } = user._doc;
