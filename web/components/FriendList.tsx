@@ -1,4 +1,5 @@
 import React from "react";
+import NextLink from "next/link";
 import { Box, Flex, Text } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/button";
 import { CheckIcon, CloseIcon, ChatIcon } from "@chakra-ui/icons";
@@ -68,7 +69,7 @@ const Request = ({ r, acceptFriendRequest, cancelFriendRequest }: any) => (
   </>
 );
 
-const Friend = ({ r }: any) => (
+const Friend = ({ r: { user, channel } }: any) => (
   <>
     <Box
       mt={2}
@@ -79,28 +80,31 @@ const Friend = ({ r }: any) => (
     <Flex justifyContent="space-between">
       <Box>
         <Text color="white" fontWeight={700}>
-          {r.username}
+          {user.username}
         </Text>
       </Box>
       <Flex>
-        <Button
-          onClick={() => {}}
-          bgColor="outerspace"
-          _hover={{
-            bgColor: "gondola",
-          }}
-          _active={{
-            bgColor: "outerspace",
-          }}
-          _focus={{
-            boxShadow: "none",
-            bgColor: "gondola",
-          }}
-          w={4}
-          borderRadius={50}
-        >
-          <ChatIcon color="#cccccc" w={3} h={3} />
-        </Button>
+        <NextLink href={`/channel/${channel}`}>
+          <Button
+            as="a"
+            onClick={() => {}}
+            bgColor="outerspace"
+            _hover={{
+              bgColor: "gondola",
+            }}
+            _active={{
+              bgColor: "outerspace",
+            }}
+            _focus={{
+              boxShadow: "none",
+              bgColor: "gondola",
+            }}
+            w={4}
+            borderRadius={50}
+          >
+            <ChatIcon color="#cccccc" w={3} h={3} />
+          </Button>
+        </NextLink>
       </Flex>
     </Flex>
   </>
@@ -120,7 +124,7 @@ const FriendList = ({
         </Text>
         {data.map((r: any) => {
           return type === "all" ? (
-            <Friend key={r._id} r={r.user} />
+            <Friend key={r._id} r={r} />
           ) : (
             <Request
               key={r._id}

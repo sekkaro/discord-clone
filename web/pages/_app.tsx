@@ -8,10 +8,12 @@ import { redirectUser } from "../utils/redirectUser";
 import Layout from "../layout/Layout";
 
 function MyApp({ Component, pageProps, router }: AppProps) {
-  if (router.pathname === "/") {
+  const protectedRoute =
+    router.pathname !== "/login" && router.pathname !== "/register";
+  if (protectedRoute) {
     return (
       <ChakraProvider theme={theme}>
-        <Layout router={router}>
+        <Layout friends={pageProps.user.friends} router={router}>
           <Component {...pageProps} />
         </Layout>
       </ChakraProvider>

@@ -1,45 +1,48 @@
-import { Flex, Box, Button } from "@chakra-ui/react";
+import { Flex, Box, Text } from "@chakra-ui/react";
 import { NextRouter } from "next/router";
-import NextLink from "next/link";
+
+import Link from "../components/Link";
 
 const Layout = ({
   router,
+  friends,
   children,
 }: {
   router: NextRouter;
+  friends: Array<any>;
   children: React.ReactNode;
 }) => {
   return (
     <Flex justifyContent="center" height="100vh">
       <Box width="20%" bgColor="darktuna" p={2}>
-        <NextLink href="/">
-          <Button
+        <Link
+          isActive={router.pathname === "/"}
+          text="Friends"
+          href="/"
+          fontSize={15}
+        />
+        {friends.length > 0 && (
+          <Text
+            mt={2}
+            mb={2}
+            ml={2}
             color="#c2c2c2"
-            fontWeight={400}
-            bgColor="darktuna"
-            p={2}
-            width="100%"
-            height={30}
-            fontSize={14}
-            _hover={{
-              bgColor: "shadow2",
-              textColor: "white",
-            }}
-            isActive={router.pathname === "/"}
-            _active={{
-              bgColor: "shadow2",
-              textColor: "white",
-            }}
-            _focus={{
-              bgColor: "shadow2",
-              textColor: "white",
-            }}
-            as="a"
-            textColor="#c2c2c2"
+            fontSize={12}
+            fontWeight={600}
           >
-            Friends
-          </Button>
-        </NextLink>
+            DIRECT MESSAGES
+          </Text>
+        )}
+        {friends.map(({ _id, user: { username }, channel }) => (
+          <Link
+            mt={0.5}
+            key={_id}
+            isActive={router.asPath === `/channel/${channel}`}
+            text={username}
+            href={`/channel/${channel}`}
+            fontSize={14}
+          />
+        ))}
       </Box>
       <Box width="80%" bgColor="tuna">
         {children}
