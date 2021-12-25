@@ -1,12 +1,7 @@
 import { NextRouter } from "next/router";
 
 export type PageProps = {
-  user?: {
-    _id: string;
-    username: string;
-    fr: [Fr];
-    friends: [User];
-  };
+  user?: User;
 };
 
 export type WithRouter = {
@@ -19,9 +14,17 @@ export type Fr = {
   type: string;
 };
 
+export type Friends = {
+  _id: string;
+  user: User;
+  channel: string;
+};
+
 export type User = {
   _id: string;
   username: string;
+  fr: [Fr];
+  friends: [Friends];
 };
 
 export enum FrType {

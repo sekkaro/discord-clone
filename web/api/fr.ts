@@ -2,20 +2,6 @@ import fetch from "isomorphic-unfetch";
 
 const API_URI = process.env.API_URI;
 
-export const fetchUser = async () => {
-  const res = await fetch(`${API_URI}/api/auth/me`, {
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    return null;
-  }
-
-  const data = await res.json();
-
-  return data;
-};
-
 export const cancelFriendRequest = async (
   id: string,
   type: string,

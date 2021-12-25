@@ -2,16 +2,17 @@ import { Flex, Box, Text } from "@chakra-ui/react";
 import { NextRouter } from "next/router";
 
 import Link from "../components/Link";
+import { useUser } from "../context/UserContext";
 
 const Layout = ({
   router,
-  friends,
   children,
 }: {
   router: NextRouter;
-  friends: Array<any>;
   children: React.ReactNode;
 }) => {
+  const { friends } = useUser();
+
   return (
     <Flex justifyContent="center" height="100vh">
       <Box width="20%" bgColor="darktuna" p={2}>

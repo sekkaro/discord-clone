@@ -13,34 +13,37 @@ import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { FormControl } from "@chakra-ui/form-control";
 
 import { FrType, PageProps } from "../types";
-import { socket } from "../utils/context";
+import { socket } from "../utils/socket";
 import {
   cancelFriendRequest as cancelFriendRequestAPI,
   sendFriendRequest as sendFriendRequestAPI,
   acceptFriendRequest as acceptFriendRequestAPI,
-  fetchUser,
 } from "../api/fr";
 import FriendList from "../components/FriendList";
+import { useUser } from "../context/UserContext";
 
-const Home: NextPage<PageProps> = ({ user }) => {
+const Home: NextPage<PageProps> = () => {
+  const { setFr, setFriends, fr, friends } = useUser();
+
   const [buttonState, setButtonState] = useState("all");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [fr, setFr] = useState(user?.fr || []);
-  const [friends, setFriends] = useState(user?.friends || []);
   const [pending, setPending] = useState(0);
   const inputRef = useRef() as LegacyRef<HTMLInputElement>;
 
   useEffect(() => {
-    socket.on("user", async () => {
-      const { fr, friends } = await fetchUser();
+    socket.on("updateFr", async (fr) => {
       setFr(fr);
+    });
+
+    socket.on("updateFriends", async (friends) => {
       setFriends(friends);
     });
 
     return () => {
-      socket.off("user");
+      socket.off("updateFr");
+      socket.off("updateFriends");
     };
   }, []);
 

@@ -140,9 +140,13 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
       userId,
       body: { username },
       io,
+      name,
     } = req;
 
-    const target = await User.findOne({ username });
+    const target = await User.findOne({ username }).populate(
+      "fr.user",
+      "_id username"
+    );
 
     if (!target) {
       res.status(404).json({ message: "user not found" });
@@ -177,8 +181,12 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
       });
       target.fr = fr;
       await target.save();
+      fr[fr.length - 1].user = {
+        _id: userId,
+        username: name,
+      };
       if (socketId) {
-        io?.sockets.to(socketId).emit("user");
+        io?.sockets.to(socketId).emit("updateFr", fr);
       }
     }
 

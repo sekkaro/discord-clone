@@ -6,6 +6,7 @@ import theme from "../theme";
 import { PageProps } from "../types";
 import { redirectUser } from "../utils/redirectUser";
 import Layout from "../layout/Layout";
+import { UserProvider } from "../context/UserContext";
 
 function MyApp({ Component, pageProps, router }: AppProps) {
   const protectedRoute =
@@ -13,9 +14,11 @@ function MyApp({ Component, pageProps, router }: AppProps) {
   if (protectedRoute) {
     return (
       <ChakraProvider theme={theme}>
-        <Layout friends={pageProps.user.friends} router={router}>
-          <Component {...pageProps} />
-        </Layout>
+        <UserProvider initialUser={pageProps?.user}>
+          <Layout router={router}>
+            <Component {...pageProps} />
+          </Layout>
+        </UserProvider>
       </ChakraProvider>
     );
   }

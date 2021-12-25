@@ -11,7 +11,10 @@ export const notifyFrSender = async (
   io?: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap>,
   channelId?: string
 ): Promise<{ error?: Error }> => {
-  const user = await User.findById(senderId);
+  const user = await User.findById(senderId).populate(
+    "fr.user friends.user",
+    "_id username"
+  );
 
   if (!user) {
     return {
@@ -22,7 +25,11 @@ export const notifyFrSender = async (
     };
   }
 
-  const { fr, _id }: { fr: Array<any>; _id: string } = user._doc;
+  let {
+    fr,
+    _id,
+    friends,
+  }: { fr: Array<any>; _id: string; friends: Array<any> } = user._doc;
 
   const socketId = getSocket(_id);
 
@@ -31,14 +38,20 @@ export const notifyFrSender = async (
   );
 
   if (isAccept) {
-    await User.findByIdAndUpdate(senderId, {
-      $push: {
-        friends: {
-          user: userId,
-          channel: channelId,
+    const updatedUser = await User.findByIdAndUpdate(
+      senderId,
+      {
+        $push: {
+          friends: {
+            user: userId,
+            channel: channelId,
+          },
         },
       },
-    });
+      { new: true }
+    ).populate("friends.user", "_id username");
+
+    friends = updatedUser._doc.friends;
   }
 
   if (idx >= 0) {
@@ -46,7 +59,10 @@ export const notifyFrSender = async (
     user.fr = fr;
     await user.save();
     if (socketId) {
-      io?.sockets.to(socketId).emit("user");
+      if (isAccept) {
+        io?.sockets.to(socketId).emit("updateFriends", friends);
+      }
+      io?.sockets.to(socketId).emit("updateFr", fr);
     }
   }
 

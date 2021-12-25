@@ -5,6 +5,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 export type AuthRequest = Request & {
   userId?: string;
   io?: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap>;
+  name?: string;
 };
 
 export type User = {

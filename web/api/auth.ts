@@ -46,3 +46,17 @@ export const register = (email: string, password: string, username: string) =>
 
     resolve(json);
   });
+
+export const fetchUser = async () => {
+  const res = await fetch(`${API_URI}/api/auth/me`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+
+  return data;
+};

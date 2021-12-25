@@ -4,7 +4,7 @@ import { AuthRequest } from "../types";
 
 import User from "../models/User";
 
-export const authenticate = (
+export const authenticate = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -21,13 +21,14 @@ export const authenticate = (
     res.status(403).json({ message: "Forbidden" });
     return;
   }
-  const user = User.findById(decoded.id);
+  const user = await User.findById(decoded.id);
   if (!user) {
     res.status(403).json({ message: "Forbidden" });
     return;
   }
 
   req.userId = decoded.id;
+  req.name = user._doc.username;
 
   next();
 };
