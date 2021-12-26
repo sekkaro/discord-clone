@@ -14,7 +14,7 @@ function MyApp({ Component, pageProps, router }: AppProps) {
   if (protectedRoute) {
     return (
       <ChakraProvider theme={theme}>
-        <UserProvider initialUser={pageProps?.user}>
+        <UserProvider>
           <Layout router={router}>
             <Component {...pageProps} />
           </Layout>
@@ -29,36 +29,36 @@ function MyApp({ Component, pageProps, router }: AppProps) {
   );
 }
 
-MyApp.getInitialProps = async (appContext: AppContext) => {
-  const { ctx, Component } = appContext;
-  let pageProps: PageProps = {};
-  const res = await fetch(`${process.env.API_URI}/api/auth/me`, {
-    credentials: "include",
-    headers: {
-      cookie: (ctx.req as any)?.headers.cookie,
-    },
-  });
-  const protectedRoute =
-    ctx.pathname !== "/login" && ctx.pathname !== "/register";
-  if (!res.ok) {
-    if (protectedRoute) {
-      redirectUser(ctx, "/login");
-    }
+// MyApp.getInitialProps = async (appContext: AppContext) => {
+//   const { ctx, Component } = appContext;
+//   let pageProps: PageProps = {};
+//   const res = await fetch(`${process.env.API_URI}/api/auth/me`, {
+//     credentials: "include",
+//     headers: {
+//       cookie: (ctx.req as any)?.headers.cookie,
+//     },
+//   });
+//   const protectedRoute =
+//     ctx.pathname !== "/login" && ctx.pathname !== "/register";
+//   if (!res.ok) {
+//     if (protectedRoute) {
+//       redirectUser(ctx, "/login");
+//     }
 
-    return { pageProps };
-  }
+//     return { pageProps };
+//   }
 
-  if (!protectedRoute) {
-    redirectUser(ctx, "/");
-  }
+//   if (!protectedRoute) {
+//     redirectUser(ctx, "/");
+//   }
 
-  if (Component.getInitialProps) {
-    pageProps = await Component.getInitialProps(ctx);
-  }
+//   if (Component.getInitialProps) {
+//     pageProps = await Component.getInitialProps(ctx);
+//   }
 
-  const user = await res.json();
-  pageProps.user = user;
-  return { pageProps };
-};
+//   const user = await res.json();
+//   pageProps.user = user;
+//   return { pageProps };
+// };
 
 export default MyApp;

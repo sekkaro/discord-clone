@@ -1,5 +1,5 @@
 import { Box, Flex, Link, Text } from "@chakra-ui/layout";
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import "@fontsource/open-sans";
 import {
   FormControl,
@@ -12,6 +12,7 @@ import NextLink from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import Router from "next/router";
 import { login } from "../api/auth";
+import { autoLogin } from "../utils/autoLogin";
 
 interface LoginData {
   email: string;
@@ -186,5 +187,7 @@ const Login: NextPage = () => {
     </Flex>
   );
 };
+
+export const getServerSideProps = autoLogin;
 
 export default Login;

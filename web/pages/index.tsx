@@ -12,8 +12,6 @@ import { Button } from "@chakra-ui/button";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { FormControl } from "@chakra-ui/form-control";
 
-import { FrType, PageProps } from "../types";
-import { socket } from "../utils/socket";
 import {
   cancelFriendRequest as cancelFriendRequestAPI,
   sendFriendRequest as sendFriendRequestAPI,
@@ -21,41 +19,16 @@ import {
 } from "../api/fr";
 import FriendList from "../components/FriendList";
 import { useUser } from "../context/UserContext";
+import NotificationNumber from "../components/NotificationNumber";
 
-const Home: NextPage<PageProps> = () => {
-  const { setFr, setFriends, fr, friends } = useUser();
+const Home: NextPage = () => {
+  const { setFr, setFriends, fr, friends, pending } = useUser();
 
   const [buttonState, setButtonState] = useState("all");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [pending, setPending] = useState(0);
   const inputRef = useRef() as LegacyRef<HTMLInputElement>;
-
-  useEffect(() => {
-    socket.on("updateFr", async (fr) => {
-      setFr(fr);
-    });
-
-    socket.on("updateFriends", async (friends) => {
-      setFriends(friends);
-    });
-
-    return () => {
-      socket.off("updateFr");
-      socket.off("updateFriends");
-    };
-  }, []);
-
-  useEffect(() => {
-    let count = 0;
-    fr.forEach((r) => {
-      if (r.type === FrType.IN) {
-        count += 1;
-      }
-    });
-    setPending(count);
-  }, [fr]);
 
   useEffect(() => {
     if (buttonState !== "add") {
@@ -169,13 +142,7 @@ const Home: NextPage<PageProps> = () => {
           onClick={() => setButtonState("pending")}
         >
           Pending
-          {pending > 0 && (
-            <Box ml={2} width={4} as="span" borderRadius={25} bgColor="red">
-              <Text fontWeight="bold" color="white">
-                {" " + pending}
-              </Text>
-            </Box>
-          )}
+          {pending > 0 && <NotificationNumber number={pending} />}
         </Button>
         <Button
           color="white"

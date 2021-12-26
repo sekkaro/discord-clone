@@ -8,6 +8,7 @@ import NextLink from "next/link";
 import Router from "next/router";
 import { Controller, useForm } from "react-hook-form";
 import { register } from "../api/auth";
+import { autoLogin } from "../utils/autoLogin";
 
 interface RegisterData {
   email: string;
@@ -200,5 +201,7 @@ const Register: NextPage = () => {
     </Flex>
   );
 };
+
+export const getServerSideProps = autoLogin;
 
 export default Register;
