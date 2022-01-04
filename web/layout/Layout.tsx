@@ -2,6 +2,7 @@ import { Flex, Box, Text, Spinner } from "@chakra-ui/react";
 import { NextRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { fetchUser } from "../api/auth";
+import ChannelLink from "../components/ChannelLink";
 
 import Link from "../components/Link";
 import { useUser } from "../context/UserContext";
@@ -59,15 +60,8 @@ const Layout = ({
                 DIRECT MESSAGES
               </Text>
             )}
-            {friends.map(({ _id, user: { username }, channel }) => (
-              <Link
-                mt={0.5}
-                key={_id}
-                isActive={router.asPath === `/channel/${channel}`}
-                text={username}
-                href={`/channel/${channel}`}
-                fontSize={14}
-              />
+            {friends.map((friend) => (
+              <ChannelLink key={friend._id} friend={friend} router={router} />
             ))}
           </Box>
           <Box width="80%" bgColor="tuna">

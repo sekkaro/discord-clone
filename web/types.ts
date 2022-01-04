@@ -14,7 +14,7 @@ export type Fr = {
   type: string;
 };
 
-export type Friends = {
+export type Friend = {
   _id: string;
   user: User;
   channel: string;
@@ -24,7 +24,7 @@ export type User = {
   _id: string;
   username: string;
   fr: [Fr];
-  friends: [Friends];
+  friends: [Friend];
 };
 
 export enum FrType {

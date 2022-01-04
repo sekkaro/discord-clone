@@ -6,16 +6,18 @@ import React, {
   useState,
 } from "react";
 
-import { Fr, Friends, FrType, User } from "../types";
+import { Fr, Friend, FrType, User } from "../types";
 import { socket } from "../utils/socket";
 
 export interface UserContext {
   setFr: (fr: [Fr]) => void;
-  setFriends: (friends: [Friends]) => void;
+  setFriends: (friends: [Friend]) => void;
+  setFriend: (friend: User) => void;
   setUser: (user: User) => void;
   fr: [Fr] | [];
-  friends: [Friends] | [];
+  friends: [Friend] | [];
   pending: number;
+  friend?: User;
 }
 
 const UserContext = createContext<UserContext>(null!);
@@ -26,9 +28,11 @@ export const useUser = () => {
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User>();
+  const [friend, setFriend] = useState<User>();
   const [pending, setPending] = useState(0);
 
   const fr = user?.fr || [];
+  const friends = user?.friends || [];
 
   useEffect(() => {
     socket.on("updateFr", async (fr) => {
@@ -64,7 +68,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const setFriends = (friends: [Friends]) => {
+  const setFriends = (friends: [Friend]) => {
     setUser((user: any) => {
       return {
         ...user,
@@ -79,9 +83,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setFr,
         setFriends,
         setUser,
+        setFriend,
         fr,
-        friends: user?.friends || [],
+        friends,
         pending,
+        friend,
       }}
     >
       {children}
