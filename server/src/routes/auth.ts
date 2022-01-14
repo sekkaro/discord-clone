@@ -71,11 +71,18 @@ router.post("/signup", async (req: Request, res: Response) => {
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId).populate(
+    const { userId } = req;
+    const user = await User.findById(userId).populate(
       "fr.user friends.user",
       "_id username"
     );
     const { _id, username, fr, friends } = user._doc;
+    /*const socket = io?.sockets.sockets.get(getSocket(userId!));
+    if (socket) {
+      friends.forEach(({ channel }: { channel: mongoose.Types.ObjectId }) => {
+        socket.join(channel.toString());
+      });
+    }*/
     res.status(200).json({ _id, username, fr, friends });
   } catch (err) {
     console.log(err);

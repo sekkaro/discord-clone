@@ -10,8 +10,9 @@ import jwt from "jsonwebtoken";
 
 import authRoute from "./routes/auth";
 import frRoute from "./routes/fr";
-import { addUser } from "./utils/users";
+import { addUser, getUserId } from "./utils/users";
 import { AuthRequest } from "./types";
+import User from "./models/User";
 
 const main = () => {
   const app = express();
@@ -69,12 +70,32 @@ const main = () => {
   io.on("connection", (socket) => {
     console.log("new web socket connection");
 
+    const userId = getUserId(socket.id);
+    if (userId) {
+      User.findById(userId, (_, user) => {
+        if (user) {
+          const { friends } = user;
+          friends.forEach(
+            ({ channel }: { channel: mongoose.Types.ObjectId }) => {
+              socket.join(channel.toString());
+            }
+          );
+        }
+      });
+    }
+
+    socket.on("sendMessage", ({ channelId, message, username }) => {
+      socket.broadcast
+        .to(channelId)
+        .emit("message", { channelId, message, username });
+    });
+
     socket.on("disconnect", () => {
       console.log("disconnected");
     });
   });
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 5050;
 
   server.listen(port, () => {
     console.log(`Server is up on port ${port}`);

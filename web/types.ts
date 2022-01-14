@@ -27,6 +27,15 @@ export type User = {
   friends: [Friend];
 };
 
+export type Message = {
+  text: string;
+  username: string;
+};
+
+export type Messages = {
+  [channelId: string]: Message[];
+};
+
 export enum FrType {
   IN = "in",
   OUT = "out",

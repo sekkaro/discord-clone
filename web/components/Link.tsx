@@ -31,16 +31,16 @@ const Link = ({
         width="100%"
         fontSize={fontSize}
         _hover={{
-          bgColor: "shadow2",
+          bgColor: "#393c43",
           textColor: "white",
         }}
         isActive={isActive}
         _active={{
-          bgColor: "shadow2",
+          bgColor: "#393c43",
           textColor: "white",
         }}
         _focus={{
-          bgColor: "shadow2",
+          bgColor: "#393c43",
           textColor: "white",
         }}
         as="a"

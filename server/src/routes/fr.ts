@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { AuthRequest, FrType } from "../types";
 import { authenticate } from "../utils/middlewares";
 import User from "../models/User";
-import { getSocket } from "../utils/users";
+import { getSocketId } from "../utils/users";
 import { notifyFrSender } from "../utils/notifyFrSender";
 import { createChannel } from "../utils/createChannel";
 
@@ -164,7 +164,7 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const socketId = getSocket(_id);
+    const socketId = getSocketId(_id);
 
     const isDuplicate = fr.find(({ user }) => user.toString() === userId);
     const isFriend = friends.find(({ user }) => user.toString() === userId);

@@ -8,10 +8,8 @@ export type AuthRequest = Request & {
   name?: string;
 };
 
-export type User = {
-  [userId: string]: {
-    socketId: string;
-  };
+export type Pair = {
+  [key: string]: string;
 };
 
 export type Fr = {

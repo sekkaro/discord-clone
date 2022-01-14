@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import User from "../models/User";
 import { Error, FrType } from "../types";
-import { getSocket } from "./users";
+import { getSocketId } from "./users";
 
 export const notifyFrSender = async (
   senderId: string,
@@ -31,7 +31,7 @@ export const notifyFrSender = async (
     friends,
   }: { fr: Array<any>; _id: string; friends: Array<any> } = user._doc;
 
-  const socketId = getSocket(_id);
+  const socketId = getSocketId(_id);
 
   const idx = fr.findIndex(({ user, type }) =>
     user.toString() === userId && type === isAccept ? FrType.OUT : FrType.IN

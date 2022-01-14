@@ -18,6 +18,7 @@ export interface UserContext {
   friends: [Friend] | [];
   pending: number;
   friend?: User;
+  username?: string;
 }
 
 const UserContext = createContext<UserContext>(null!);
@@ -88,6 +89,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         friends,
         pending,
         friend,
+        username: user?.username,
       }}
     >
       {children}

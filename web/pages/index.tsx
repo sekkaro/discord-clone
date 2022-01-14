@@ -87,9 +87,9 @@ const Home: NextPage = () => {
         pt={1}
         pb={1}
         alignItems="center"
-        borderBottom="2px solid rgba(0, 0, 0, 0.1)"
+        borderBottom="1px solid #2b2d32"
       >
-        <Text ml={2} color="white" fontWeight={500}>
+        <Text ml={5} color="white" fontWeight={500}>
           Friends
         </Text>
         <Button
@@ -226,6 +226,7 @@ const Home: NextPage = () => {
                   value={username}
                   isInvalid={!!error}
                   ref={inputRef}
+                  onKeyDown={(e) => e.code === "Enter" && sendFriendRequest()}
                 />
                 <InputRightElement
                   mt={1}

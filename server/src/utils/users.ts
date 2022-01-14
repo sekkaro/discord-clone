@@ -1,14 +1,19 @@
-import { User } from "../types";
+import { Pair } from "../types";
 
-let users: User = {};
+let users: Pair = {};
+let sockets: Pair = {};
 
 export const addUser = (userId: string, socketId: string) => {
   users = {
     ...users,
-    [userId]: {
-      socketId,
-    },
+    [userId]: socketId,
+  };
+  sockets = {
+    ...sockets,
+    [socketId]: userId,
   };
 };
 
-export const getSocket = (userId: string) => users[userId]?.socketId;
+export const getSocketId = (userId: string) => users[userId];
+
+export const getUserId = (socketId: string) => sockets[socketId];
