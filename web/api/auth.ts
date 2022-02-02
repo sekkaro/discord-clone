@@ -1,3 +1,5 @@
+import { socket } from "../utils/socket";
+
 const API_URI = process.env.API_URI;
 
 export const login = (email: string, password: string) =>
@@ -19,6 +21,8 @@ export const login = (email: string, password: string) =>
     }
 
     const json = await res.json();
+
+    socket.connect();
 
     resolve(json);
   });
@@ -43,6 +47,8 @@ export const register = (email: string, password: string, username: string) =>
     if (!res.ok || json.status === "failed") {
       reject(json);
     }
+
+    socket.connect();
 
     resolve(json);
   });

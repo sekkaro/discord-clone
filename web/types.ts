@@ -30,7 +30,14 @@ export type User = {
 export type Message = {
   text: string;
   username: string;
+  status: StatusType;
 };
+
+export enum StatusType {
+  PENDING = "pending",
+  ERROR = "error",
+  SUCCESS = "success",
+}
 
 export type Messages = {
   [channelId: string]: Message[];

@@ -84,10 +84,11 @@ const main = () => {
       });
     }
 
-    socket.on("sendMessage", ({ channelId, message, username }) => {
+    socket.on("sendMessage", ({ channelId, message, username }, callback) => {
       socket.broadcast
         .to(channelId)
         .emit("message", { channelId, message, username });
+      callback();
     });
 
     socket.on("disconnect", () => {

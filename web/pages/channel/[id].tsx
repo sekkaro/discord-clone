@@ -5,27 +5,33 @@ import { useRouter } from "next/router";
 import { useUser } from "../../context/UserContext";
 import { socket } from "../../utils/socket";
 import { useChannel } from "../../context/ChannelContext";
+import { StatusType } from "../../types";
 
 const Channel = () => {
   const router = useRouter();
   const { friend, username } = useUser();
-  const { messages } = useChannel();
+  const { messages, addMessages, changeStatus } = useChannel();
   const [message, setMessage] = useState("");
 
   const channelMessages = messages[router.query.id as string];
 
   const sendMessage = () => {
-    const msg = message;
+    const msg = {
+      channelId: router.query.id as string,
+      message,
+      username: username as string,
+      status: StatusType.PENDING,
+    };
     setMessage("");
-    socket.emit(
-      "sendMessage",
-      { channelId: router.query.id, message: msg, username },
-      async (err: string) => {
-        if (err) {
-          console.log(err);
-        }
+    const idx = addMessages(msg);
+    socket.emit("sendMessage", msg, async (err: string) => {
+      if (!err) {
+        changeStatus(msg.channelId, idx, StatusType.SUCCESS);
+      } else {
+        console.log(err);
+        changeStatus(msg.channelId, idx, StatusType.ERROR);
       }
-    );
+    });
   };
 
   return (
@@ -63,12 +69,21 @@ const Channel = () => {
           flex={20}
           justifyContent="flex-end"
         >
-          {channelMessages?.map(({ text, username }, idx) => (
+          {channelMessages?.map(({ text, username, status }, idx) => (
             <Box pt={1} pb={1} key={idx}>
               <Text color="#ffffff" fontSize={15}>
                 {username}
               </Text>
-              <Text color="#dcddde" fontSize={15}>
+              <Text
+                color={
+                  status === StatusType.SUCCESS
+                    ? "#dcddde"
+                    : status === StatusType.PENDING
+                    ? "shadow2"
+                    : "red"
+                }
+                fontSize={15}
+              >
                 {text}
               </Text>
             </Box>
