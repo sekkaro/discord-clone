@@ -62,7 +62,7 @@ const main = () => {
       return;
     }
 
-    addUser(decoded.id, socket.id);
+    addUser(decoded.id, socket.id, io);
 
     next();
   });
@@ -96,7 +96,7 @@ const main = () => {
     });
   });
 
-  const port = process.env.PORT || 5050;
+  const port = process.env.PORT || 3030;
 
   server.listen(port, () => {
     console.log(`Server is up on port ${port}`);
