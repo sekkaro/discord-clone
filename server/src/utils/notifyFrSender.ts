@@ -61,6 +61,7 @@ export const notifyFrSender = async (
     if (socketId) {
       if (isAccept) {
         io?.sockets.to(socketId).emit("updateFriends", friends);
+        io?.sockets.sockets.get(socketId)?.join(channelId!);
       }
       io?.sockets.to(socketId).emit("updateFr", fr);
     }

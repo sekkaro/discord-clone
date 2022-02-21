@@ -72,6 +72,10 @@ router.post(
         return;
       }
 
+      const socketId = getSocketId(userId!);
+
+      io?.sockets.sockets.get(socketId)?.join(channelId);
+
       const { fr, friends } = user._doc;
 
       res.status(200).json({ fr, friends });

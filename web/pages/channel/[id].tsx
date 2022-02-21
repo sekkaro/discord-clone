@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Flex, Text, Input, Box } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -12,9 +12,14 @@ const Channel = () => {
   const { friend, username } = useUser();
   const { messages, addMessages, changeStatus } = useChannel();
   const [message, setMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const channelId = router.query.id as string;
   const channelMessages = messages[channelId];
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [channelMessages]);
 
   const sendMessage = () => {
     const msg = {
@@ -33,6 +38,10 @@ const Channel = () => {
         changeStatus(msg.channelId, idx, StatusType.ERROR);
       }
     });
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
   return (
@@ -89,6 +98,7 @@ const Channel = () => {
               </Text>
             </Box>
           ))}
+          <div ref={messagesEndRef} />
         </Box>
         <Box flex={1} mr={5}>
           <Input
