@@ -1,7 +1,6 @@
 import NextLink from "next/link";
 import { Button } from "@chakra-ui/react";
 
-import { useUser } from "../context/UserContext";
 import NotificationNumber from "./NotificationNumber";
 
 const Link = ({
@@ -10,15 +9,15 @@ const Link = ({
   href,
   mt,
   fontSize,
+  pending,
 }: {
   isActive: boolean;
   text: string;
   href: string;
   mt?: number;
   fontSize: number;
+  pending: number;
 }) => {
-  const { pending } = useUser();
-
   return (
     <NextLink href={href}>
       <Button
@@ -46,7 +45,7 @@ const Link = ({
         as="a"
       >
         {text}
-        {href === "/" && pending > 0 && <NotificationNumber number={pending} />}
+        {pending > 0 && <NotificationNumber number={pending} />}
       </Button>
     </NextLink>
   );

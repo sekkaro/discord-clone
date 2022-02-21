@@ -13,11 +13,12 @@ const Channel = () => {
   const { messages, addMessages, changeStatus } = useChannel();
   const [message, setMessage] = useState("");
 
-  const channelMessages = messages[router.query.id as string];
+  const channelId = router.query.id as string;
+  const channelMessages = messages[channelId];
 
   const sendMessage = () => {
     const msg = {
-      channelId: router.query.id as string,
+      channelId,
       message,
       username: username as string,
       status: StatusType.PENDING,

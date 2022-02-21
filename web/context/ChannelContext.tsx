@@ -25,6 +25,10 @@ export interface ChannelContext {
     status?: StatusType | undefined;
   }) => number;
   changeStatus: (channelId: string, idx: number, status: StatusType) => void;
+  setCurrentChannel: (currentChannel: string) => void;
+  unseenCount: {
+    [channelId: string]: number;
+  };
 }
 
 const ChannelContext = createContext<ChannelContext>(null!);
@@ -35,14 +39,22 @@ export const useChannel = () => {
 
 export const ChannelProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Messages>({});
+  const [unseenCount, setUnseenCount] = useState<{
+    [channelId: string]: number;
+  }>({});
+  const [currentChannel, setCurrentChannel] = useState<string>("");
 
   useEffect(() => {
     socket.on("message", addMessages);
-
+    if (unseenCount[currentChannel] && unseenCount[currentChannel] > 0) {
+      setUnseenCount((channels) => {
+        return { ...channels, [currentChannel]: 0 };
+      });
+    }
     return () => {
       socket.off("message");
     };
-  }, []);
+  }, [currentChannel]);
 
   const addMessages = ({
     channelId,
@@ -55,6 +67,21 @@ export const ChannelProvider = ({ children }: { children: ReactNode }) => {
     username: string;
     status?: StatusType;
   }) => {
+    setUnseenCount((channels) => {
+      if (channelId === currentChannel) {
+        return {
+          ...channels,
+          [channelId]: 0,
+        };
+      }
+
+      const unseenCount = channels[channelId] ? channels[channelId] + 1 : 1;
+      return {
+        ...channels,
+        [channelId]: unseenCount,
+      };
+    });
+
     setMessages((messages) => {
       const newMsg = {
         text: message,
@@ -94,6 +121,8 @@ export const ChannelProvider = ({ children }: { children: ReactNode }) => {
         messages,
         addMessages,
         changeStatus,
+        setCurrentChannel,
+        unseenCount,
       }}
     >
       {children}

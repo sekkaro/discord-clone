@@ -5,6 +5,7 @@ import { fetchUser } from "../api/auth";
 import ChannelLink from "../components/ChannelLink";
 
 import Link from "../components/Link";
+import { useChannel } from "../context/ChannelContext";
 import { useUser } from "../context/UserContext";
 
 const Layout = ({
@@ -15,7 +16,9 @@ const Layout = ({
   children: React.ReactNode;
 }) => {
   const [loading, setLoading] = useState(true);
-  const { friends, setUser } = useUser();
+  const { friends, setUser, pending } = useUser();
+  const { setCurrentChannel } = useChannel();
+  const { pathname } = router;
 
   useEffect(() => {
     fetchUser().then((user) => {
@@ -26,6 +29,12 @@ const Layout = ({
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (pathname === "/") {
+      setCurrentChannel("");
+    }
+  }, [pathname]);
 
   return (
     <Flex justifyContent="center" height="100vh">
@@ -43,10 +52,11 @@ const Layout = ({
         <>
           <Box width="20%" bgColor="darktuna" p={2}>
             <Link
-              isActive={router.pathname === "/"}
+              isActive={pathname === "/"}
               text="Friends"
               href="/"
               fontSize={15}
+              pending={pending}
             />
             {friends.length > 0 && (
               <Text
